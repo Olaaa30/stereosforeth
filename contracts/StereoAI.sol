@@ -1,192 +1,94 @@
 // SPDX-License-Identifier: MIT
-//       ___      ___         ___         ___         ___         ___         ___               
-//      /\  \    /\  \       /\  \       /\  \       /\  \       /\  \       /\  \        ___   
-//     /::\  \   \:\  \     /::\  \     /::\  \     /::\  \     /::\  \     /::\  \      /\  \  
-//    /:/\ \  \   \:\  \   /:/\:\  \   /:/\:\  \   /:/\:\  \   /:/\:\  \   /:/\:\  \     \:\  \ 
+//       ___      ___         ___         ___         ___         ___         ___
+//      /\  \    /\  \       /\  \       /\  \       /\  \       /\  \       /\  \        ___
+//     /::\  \   \:\  \     /::\  \     /::\  \     /::\  \     /::\  \     /::\  \      /\  \
+//    /:/\ \  \   \:\  \   /:/\:\  \   /:/\:\  \   /:/\:\  \   /:/\:\  \   /:/\:\  \     \:\  \
 //   _\:\~\ \  \  /::\  \ /::\~\:\  \ /::\~\:\  \ /::\~\:\  \ /:/  \:\  \ /::\~\:\  \    /::\__\
 //  /\ \:\ \ \__\/:/\:\__/:/\:\ \:\__/:/\:\ \:\__/:/\:\ \:\__/:/__/ \:\__/:/\:\ \:\__\__/:/\/__/
-//  \:\ \:\ \/__/:/  \/__\:\~\:\ \/__\/_|::\/:/  \:\~\:\ \/__\:\  \ /:/  \/__\:\/:/  /\/:/  /   
-//   \:\ \:\__\/:/  /     \:\ \:\__\    |:|::/  / \:\ \:\__\  \:\  /:/  /     \::/  /\::/__/    
-//    \:\/:/  /\/__/       \:\ \/__/    |:|\/__/   \:\ \/__/   \:\/:/  /      /:/  /  \:\__\    
-//     \::/  /              \:\__\      |:|  |      \:\__\      \::/  /      /:/  /    \/__/    
-//      \/__/                \/__/       \|__|       \/__/       \/__/       \/__/              
-// 
+//  \:\ \:\ \/__/:/  \/__\:\~\:\ \/__\/_|::\/:/  \:\~\:\ \/__\:\  \ /:/  \/__\:\/:/  /\/:/  /
+//   \:\ \:\__\/:/  /     \:\ \:\__\    |:|::/  / \:\ \:\__\  \:\  /:/  /     \::/  /\::/__/
+//    \:\/:/  /\/__/       \:\ \/__/    |:|\/__/   \:\ \/__/   \:\/:/  /      /:/  /  \:\__\
+//     \::/  /              \:\__\      |:|  |      \:\__\      \::/  /      /:/  /    \/__/
+//      \/__/                \/__/       \|__|       \/__/       \/__/       \/__/
+//
 //                                  https://stereoai.app/
 //                                  https://t.me/stereoAI
 //                              https://twitter.com/StereoAIapp
 
-
-
 pragma solidity 0.8.19;
 
+//imports
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/**
- * @dev Provides information about the current execution context, including the
- * sender of the transaction and its data. While these are generally available
- * via msg.sender and msg.data, they should not be accessed in such a direct
- * manner, since when dealing with meta-transactions the account sending and
- * paying for execution may not be the actual sender (as far as an application
- * is concerned).
- *
- * This contract is only required for intermediate, library-like contracts.
- */
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
+contract StereoAI is ERC20, Ownable {
+    //Tokenomics Start
+    // =======================================================>
+    string private _name = "Stereo AI";
+    string private _symbol = "STAI";
+    uint256 private _decimals = decimals();
+    uint256 _maxSupply = 1_000_000_000 * _decimals; // one billion
+    uint256 _supplyAtLaunch = _maxSupply / 2;
+    uint256 _quarterOfMaxSupply = _maxSupply / 4;
+    uint256 _currentTotalSupply;
+    uint256 _timeForOneWeek = 604800;
+    uint256 _mintTimeAfterOneWeek = block.timestamp + _timeForOneWeek;
+    uint256 _mintTimeAfterFourWeeks = block.timestamp + (_timeForOneWeek * 4);
+    uint256 public taxForLiquidity = 47; //sniper protection, to be lowered after launch
+    mapping(address => bool) public _isExcludedFromFee;
+
+    event TokensMinted(uint256 _amountMinted, uint256 _when);
+
+    function postLaunch() external onlyOwner {
+        taxForLiquidity = 1;
     }
 
-    function _msgData() internal view virtual returns (bytes calldata) {
-        return msg.data;
-    }
-}
-
-
-/**
- * @dev Contract module which provides a basic access control mechanism, where
- * there is an account (an owner) that can be granted exclusive access to
- * specific functions.
- *
- * By default, the owner account will be the one that deploys the contract. This
- * can later be changed with {transferOwnership}.
- *
- * This module is used through inheritance. It will make available the modifier
- * `onlyOwner`, which can be applied to your functions to restrict their use to
- * the owner.
- */
-
-abstract contract Ownable is Context {
-    address private _owner;
-
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    // TOKENOMICS END
+    // ====================================================>
 
     /**
-     * @dev initializes the contract setting the deployer as the initial owner.
+     * @dev Sets the values for {name} and {symbol}.
+     *
+     * The default value of {decimals} is 18. To select a different value for
+     * {decimals} you should overload it.
+     *
+     * All two of these values are immutable: they can only be set once during
+     * construction.
      */
-    constructor() {
-        _transferOwnership(_msgSender());
+
+    constructor() ERC20(_name, _symbol) {
+        _mint(msg.sender, _supplyAtLaunch);
+        emit TokensMinted(_supplyAtLaunch, block.timestamp);
     }
 
     /**
-     * @dev returns the address of the current owner.
+     * @dev function to mint tokens a week after launch
      */
-    function owner() public view virtual returns (address) {
-        return _owner;
+    function mintAfterOneWeek() public onlyOwner {
+        require(
+            block.timestamp > _mintTimeAfterOneWeek,
+            "Minting too early, It hasn't been a week since launch"
+        );
+        require(
+            _currentTotalSupply <= _maxSupply,
+            "maxSupply cannot be exceeded"
+        );
+        _mint(msg.sender, _quarterOfMaxSupply);
+        emit TokensMinted(_quarterOfMaxSupply, block.timestamp); 
     }
-
     /**
-     * @dev throws if called by any account other than the owner.
+     * @dev function to mint tokens four weeks after launch
      */
-    modifier onlyOwner() {
-        require(owner() == _msgSender(), "Ownable: caller is not the owner");
-        _;
+        function mintAfterFourWeeks() public onlyOwner {
+        require(
+            block.timestamp > _mintTimeAfterFourWeeks,
+            "Minting too early, It hasn't been four weeks since launch"
+        );
+        require(
+            _currentTotalSupply <= _maxSupply,
+            "maxSupply cannot be exceeded"
+        );
+        _mint(msg.sender, _quarterOfMaxSupply);
+        emit TokensMinted(_quarterOfMaxSupply, block.timestamp); 
     }
-   /**
-     * @dev Leaves the contract without owner. It will not be possible to call
-     * `onlyOwner` functions anymore. Can only be called by the current owner.
-     *
-     * NOTE: Renouncing ownership will leave the contract without an owner,
-     * thereby removing any functionality that is only available to the owner.
-     */
-    function renounceOwnership() public virtual onlyOwner {
-        _transferOwnership(address(0));
-    }
-
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
-     */
-    function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
-        _transferOwnership(newOwner);
-    }
-
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Internal function without access restriction.
-     */
-    function _transferOwnership(address newOwner) internal virtual {
-        address oldOwner = _owner;
-        _owner = newOwner;
-        emit OwnershipTransferred(oldOwner, newOwner);
-    }
-}
-
-// SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/IERC20.sol)
-
-// pragma solidity ^0.8.20;
-
-/**
- * @dev Interface of the ERC20 standard as defined in the EIP.
- */
-interface IERC20 {
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-
-    /**
-     * @dev Returns the value of tokens in existence.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns the value of tokens owned by `account`.
-     */
-    function balanceOf(address account) external view returns (uint256);
-
-    /**
-     * @dev Moves a `value` amount of tokens from the caller's account to `to`.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transfer(address to, uint256 value) external returns (bool);
-
-    /**
-     * @dev Returns the remaining number of tokens that `spender` will be
-     * allowed to spend on behalf of `owner` through {transferFrom}. This is
-     * zero by default.
-     *
-     * This value changes when {approve} or {transferFrom} are called.
-     */
-    function allowance(address owner, address spender) external view returns (uint256);
-
-    /**
-     * @dev Sets a `value` amount of tokens as the allowance of `spender` over the
-     * caller's tokens.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * IMPORTANT: Beware that changing an allowance with this method brings the risk
-     * that someone may use both the old and the new allowance by unfortunate
-     * transaction ordering. One possible solution to mitigate this race
-     * condition is to first reduce the spender's allowance to 0 and set the
-     * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-     *
-     * Emits an {Approval} event.
-     */
-    function approve(address spender, uint256 value) external returns (bool);
-
-    /**
-     * @dev Moves a `value` amount of tokens from `from` to `to` using the
-     * allowance mechanism. `value` is then deducted from the caller's
-     * allowance.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(address from, address to, uint256 value) external returns (bool);
 }
