@@ -13,7 +13,6 @@ export const networkConfig: networkConfigInfo = {
     },
     5: {
         blockConfirmations: 6,
-        ethUsdPriceFeed: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
     },
 };
 

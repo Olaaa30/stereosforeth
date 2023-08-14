@@ -26,11 +26,11 @@ contract StereoAI is ERC20, Ownable {
     // =======================================================>
     string private _name = "Stereo AI";
     string private _symbol = "STAI";
-    uint256 private _decimals = decimals();
-    uint256 _maxSupply = 1_000_000_000 * _decimals; // one billion
+    uint256 private _decimals = 18;
+    uint256 _maxSupply = 1000000000; // one billion
     uint256 _supplyAtLaunch = _maxSupply / 2;
     uint256 _quarterOfMaxSupply = _maxSupply / 4;
-    uint256 _currentTotalSupply;
+    uint256 _currentTotalSupply = 0;
     uint256 _timeForOneWeek = 604800;
     uint256 _mintTimeAfterOneWeek = block.timestamp + _timeForOneWeek;
     uint256 _mintTimeAfterFourWeeks = block.timestamp + (_timeForOneWeek * 4);
@@ -57,7 +57,8 @@ contract StereoAI is ERC20, Ownable {
      */
 
     constructor() ERC20(_name, _symbol) {
-        _mint(msg.sender, _supplyAtLaunch);
+        _mint(msg.sender, _supplyAtLaunch * 10**_decimals);
+        _currentTotalSupply = _supplyAtLaunch; 
         emit TokensMinted(_supplyAtLaunch, block.timestamp);
     }
 
@@ -90,5 +91,8 @@ contract StereoAI is ERC20, Ownable {
         );
         _mint(msg.sender, _quarterOfMaxSupply);
         emit TokensMinted(_quarterOfMaxSupply, block.timestamp); 
+    }
+    function getCurrentTotalSupply() public view returns(uint256){
+        return _currentTotalSupply;
     }
 }
