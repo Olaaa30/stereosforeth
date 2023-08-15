@@ -82,6 +82,16 @@ import { StereoAI } from "../typechain-types/contracts/StereoAI";
             "Minting too early, It hasn't been four weeks since launch"
           );
         });
+        it("mintAfterTenSeconds",async () => {
+          const { stereoAI, deployer, otherAddress } = await loadFixture(
+            deployStereoAIFixture
+          );
+          const decimals: bigint = BigInt(1e18);
+          const expectedBalance : bigint = BigInt(750000000) * decimals;
+          await stereoAI.mintAfterTenSeconds();
+          const deployerBalance = await stereoAI.balanceOf(deployer.address);
+          expect(deployerBalance).to.equal(expectedBalance);
+        })
       });
       describe("Transactions", () => {
         it("should tranfer tokens between accounts", async () => {

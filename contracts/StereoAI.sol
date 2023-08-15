@@ -32,7 +32,9 @@ contract StereoAI is ERC20, Ownable {
     uint256 _quarterOfMaxSupply = _maxSupply / 4;
     uint256 _currentTotalSupply = 0;
     uint256 _timeForOneWeek = 604800;
+    uint256 _tenSeconds = 2;
     uint256 _mintTimeAfterOneWeek = block.timestamp + _timeForOneWeek;
+    uint256 _mintTimeAfterTenSeconds = block.timestamp + _tenSeconds;
     uint256 _mintTimeAfterFourWeeks = block.timestamp + (_timeForOneWeek * 4);
     uint256 public taxForLiquidity = 47; //sniper protection, to be lowered after launch
     mapping(address => bool) public _isExcludedFromFee;
@@ -57,8 +59,8 @@ contract StereoAI is ERC20, Ownable {
      */
 
     constructor() ERC20(_name, _symbol) {
-        _mint(msg.sender, _supplyAtLaunch * 10**_decimals);
-        _currentTotalSupply = _supplyAtLaunch; 
+        _mint(msg.sender, _supplyAtLaunch * 10 ** _decimals);
+        _currentTotalSupply = _supplyAtLaunch;
         emit TokensMinted(_supplyAtLaunch, block.timestamp);
     }
 
@@ -74,13 +76,14 @@ contract StereoAI is ERC20, Ownable {
             _currentTotalSupply <= _maxSupply,
             "maxSupply cannot be exceeded"
         );
-        _mint(msg.sender, _quarterOfMaxSupply);
-        emit TokensMinted(_quarterOfMaxSupply, block.timestamp); 
+        _mint(msg.sender, _quarterOfMaxSupply * 10 ** _decimals);
+        emit TokensMinted(_quarterOfMaxSupply, block.timestamp);
     }
+
     /**
      * @dev function to mint tokens four weeks after launch
      */
-        function mintAfterFourWeeks() public onlyOwner {
+    function mintAfterFourWeeks() public onlyOwner {
         require(
             block.timestamp > _mintTimeAfterFourWeeks,
             "Minting too early, It hasn't been four weeks since launch"
@@ -89,10 +92,26 @@ contract StereoAI is ERC20, Ownable {
             _currentTotalSupply <= _maxSupply,
             "maxSupply cannot be exceeded"
         );
-        _mint(msg.sender, _quarterOfMaxSupply);
-        emit TokensMinted(_quarterOfMaxSupply, block.timestamp); 
+        _mint(msg.sender, _quarterOfMaxSupply *10 ** _decimals);
+        emit TokensMinted(_quarterOfMaxSupply, block.timestamp);
     }
-    function getCurrentTotalSupply() public view returns(uint256){
+
+    /**
+     * @dev mint tokens after tenSeconds
+     */
+    function mintAfterTenSeconds() public onlyOwner {
+        require(block.timestamp > _tenSeconds, "minting too early");
+        require(
+            _currentTotalSupply <= _maxSupply,
+            "maxSupply cannot be exceeded "
+        );
+        _mint(msg.sender, _quarterOfMaxSupply * 10 ** _decimals);
+    }
+
+    /**
+     * @dev returns current total number of tokens in circulation
+     */
+    function getCurrentTotalSupply() public view returns (uint256) {
         return _currentTotalSupply;
     }
 }
