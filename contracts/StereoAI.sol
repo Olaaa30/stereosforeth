@@ -15,7 +15,7 @@
 //                                  https://t.me/stereoAI
 //                              https://twitter.com/StereoAIapp
 
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 //imports
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -32,9 +32,9 @@ contract StereoAI is ERC20, Ownable {
     uint256 _quarterOfMaxSupply = _maxSupply / 4;
     uint256 _currentTotalSupply = 0;
     uint256 _timeForOneWeek = 604800;
-    uint256 _tenSeconds = 2;
+    // uint256 _tenSeconds = 10;
     uint256 _mintTimeAfterOneWeek = block.timestamp + _timeForOneWeek;
-    uint256 _mintTimeAfterTenSeconds = block.timestamp + _tenSeconds;
+    // uint256 _mintTimeAfterTenSeconds = block.timestamp + _tenSeconds;
     uint256 _mintTimeAfterFourWeeks = block.timestamp + (_timeForOneWeek * 4);
     uint256 public taxForLiquidity = 47; //sniper protection, to be lowered after launch
     mapping(address => bool) public _isExcludedFromFee;
@@ -99,14 +99,14 @@ contract StereoAI is ERC20, Ownable {
     /**
      * @dev mint tokens after tenSeconds
      */
-    function mintAfterTenSeconds() public onlyOwner {
-        require(block.timestamp > _tenSeconds, "minting too early");
-        require(
-            _currentTotalSupply <= _maxSupply,
-            "maxSupply cannot be exceeded "
-        );
-        _mint(msg.sender, _quarterOfMaxSupply * 10 ** _decimals);
-    }
+    // function mintAfterTenSeconds() public onlyOwner {
+    //     require(block.timestamp > _tenSeconds, "minting too early");
+    //     require(
+    //         _currentTotalSupply <= _maxSupply,
+    //         "maxSupply cannot be exceeded "
+    //     );
+    //     _mint(msg.sender, _quarterOfMaxSupply * 10 ** _decimals);
+    // }
 
     /**
      * @dev returns current total number of tokens in circulation
