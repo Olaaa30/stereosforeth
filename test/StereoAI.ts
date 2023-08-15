@@ -89,8 +89,8 @@ import { StereoAI } from "../typechain-types/contracts/StereoAI";
           const decimals: bigint = BigInt(1e18);
           const expectedBalance : bigint = BigInt(750000000) * decimals;
           await stereoAI.mintAfterTenSeconds();
-          const deployerBalance = await stereoAI.balanceOf(deployer.address);
-          expect(deployerBalance).to.equal(expectedBalance);
+          // const deployerBalance = await ;
+          expect(await stereoAI.balanceOf(deployer.address)).to.equal(expectedBalance);
         })
       });
       describe("Transactions", () => {
