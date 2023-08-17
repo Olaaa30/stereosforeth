@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 //                   ___           ___           ___                                  ___                 
 //       ___        /__/\         /__/\         /  /\                  _____         /  /\          ___   
 //      /  /\       \  \:\        \  \:\       /  /:/_                /  /::\       /  /::\        /  /\  
@@ -19,7 +18,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract StereoAI is ERC20, Ownable {
+contract TuneBot is ERC20, Ownable {
     //Tokenomics Start
     // =======================================================>
     string private _name = "Tune Bot";

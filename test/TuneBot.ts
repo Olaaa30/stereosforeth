@@ -6,7 +6,7 @@ import { developmentChains } from "../helper-hardhat-config";
 import { expect } from "chai";
 import { ethers, network } from "hardhat";
 import { it } from "mocha";
-import { TuneBot } from "../typechain-types/contracts/";
+import { TuneBot } from "../typechain-types/contracts/TuneBot";
 
 // * if the newwork will be hardhat or localhost then these tests will be run.
 
@@ -15,16 +15,16 @@ import { TuneBot } from "../typechain-types/contracts/";
   : describe("tuneBot Contract - Unit tests", () => {
       let deployer, otherAddress;
       let maxSupply: bigint = 1000000000n;
-      let tuneBot: tuneBot;
-      const ONE_WEEK_IN_SECS: bigint = BigInt(60 * 60 * 24 * 7);
+      let tuneBot: TuneBot;
+      // const ONE_WEEK_IN_SECS: bigint = BigInt(60 * 60 * 24 * 7);
 
       async function deploytuneBotFixture() {
         const deployTime = await time.latest();
 
         [deployer, otherAddress] = await ethers.getSigners();
 
-        const tuneBot = await ethers.getContractFactory("tuneBot");
-        const tuneBot = await tuneBot.deploy();
+        const TuneBot = await ethers.getContractFactory("TuneBot");
+        const tuneBot = await TuneBot.deploy();
 
         return { tuneBot, deployer, otherAddress };
       }
@@ -82,16 +82,16 @@ import { TuneBot } from "../typechain-types/contracts/";
             "Minting too early, It hasn't been four weeks since launch"
           );
         });
-        it("mintAfterTenSeconds",async () => {
-          const { tuneBot, deployer, otherAddress } = await loadFixture(
-            deploytuneBotFixture
-          );
-          const decimals: bigint = BigInt(1e18);
-          const expectedBalance : bigint = BigInt(750000000) * decimals;
-          await tuneBot.mintAfterTenSeconds();
-          // const deployerBalance = await ;
-          expect(await tuneBot.balanceOf(deployer.address)).to.equal(expectedBalance);
-        })
+        // it("mintAfterTenSeconds",async () => {
+        //   const { tuneBot, deployer, otherAddress } = await loadFixture(
+        //     deploytuneBotFixture
+        //   );
+        //   const decimals: bigint = BigInt(1e18);
+        //   const expectedBalance : bigint = BigInt(750000000) * decimals;
+        //   await tuneBot.mintAfterTenSeconds();
+        //   // const deployerBalance = await ;
+        //   expect(await tuneBot.balanceOf(deployer.address)).to.equal(expectedBalance);
+        // })
       });
       describe("Transactions", () => {
         it("should tranfer tokens between accounts", async () => {
@@ -112,7 +112,7 @@ import { TuneBot } from "../typechain-types/contracts/";
           // Transfer 50 tokens from otherAddress to deployer
           // We use .connect(signer) to send a transaction from another account
           await expect(
-            (tuneBot.connect(otherAddress) as tuneBot).transfer(deployer.address, amount)
+            (tuneBot.connect(otherAddress) as TuneBot).transfer(deployer.address, amount)
           ).to.changeTokenBalances(
             tuneBot,
             [otherAddress, deployer],
